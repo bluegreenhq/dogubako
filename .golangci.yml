@@ -1,0 +1,75 @@
+version: 2
+issues:
+  max-issues-per-linter: 0
+linters:
+  default: none
+  enable:
+    - asciicheck
+    - bodyclose
+    - copyloopvar
+    - durationcheck
+    - err113
+    - errcheck
+    - errorlint
+    - exhaustive
+    - exhaustruct
+    - forcetypeassert
+    - gochecknoglobals
+    - gochecknoinits
+    - goconst
+    - gocritic
+    - godox
+    - goprintffuncname
+    - gosec
+    - govet
+    - importas
+    - ineffassign
+    - makezero
+    - misspell
+    - nakedret
+    - nilerr
+    - nlreturn
+    - noctx
+    - nolintlint
+    - prealloc
+    - predeclared
+    - rowserrcheck
+    - sqlclosecheck
+    - staticcheck
+    - testpackage
+    - thelper
+    - unconvert
+    - unparam
+    - unused
+    - wastedassign
+    - whitespace
+    - wsl
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
+formatters:
+  enable:
+    - gci
+    - gofmt
+    - goimports
+  settings:
+    gci:
+      sections:
+        - standard
+        - default
+        - localmodule
+      custom-order: true
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
