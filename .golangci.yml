@@ -44,6 +44,10 @@ linters:
     - wastedassign
     - whitespace
     - wsl
+  settings:
+    exhaustruct:
+      exclude:
+        - log/.*
   exclusions:
     generated: lax
     presets:

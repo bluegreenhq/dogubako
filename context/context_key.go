@@ -8,4 +8,5 @@ const (
 	ContextKeyRequestTime ContextKey = "requestTime"
 	// application layer
 	ContextKeyTransaction ContextKey = "transaction"
+	ContextKeyLogger      ContextKey = "logger"
 )
