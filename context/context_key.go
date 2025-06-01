@@ -1,5 +1,7 @@
 package context
 
+import "context"
+
 type ContextKey string
 
 const (
@@ -10,3 +12,13 @@ const (
 	ContextKeyTransaction ContextKey = "transaction"
 	ContextKeyLogger      ContextKey = "logger"
 )
+
+func ExtractValue[T any](ctx context.Context, key ContextKey) T {
+	if value, ok := ctx.Value(key).(T); ok {
+		return value
+	}
+
+	var zero T
+
+	return zero
+}

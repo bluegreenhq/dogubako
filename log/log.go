@@ -8,8 +8,8 @@ import (
 	"runtime"
 	"time"
 
-	pkgcontext "github.com/bluegreenhq/dogubako/context"
-	"github.com/bluegreenhq/dogubako/model"
+	dogucontext "github.com/bluegreenhq/dogubako/context"
+	"github.com/bluegreenhq/dogubako/request"
 )
 
 const MaxLogMessageLen = 4000
@@ -19,7 +19,7 @@ type loggerImpl struct {
 	level  slog.Level
 }
 
-func NewLogger(isProduction bool) model.Logger {
+func NewLogger(isProduction bool) Logger {
 	var handler slog.Handler
 
 	logLevel := getLogLevel(isProduction)
@@ -58,8 +58,9 @@ func (l *loggerImpl) loggerWithContext(ctx context.Context) *slog.Logger {
 	var logger = l.logger
 
 	if ctx != nil {
-		if requestID, ok := ctx.Value(pkgcontext.ContextKeyRequestID).(string); ok {
-			logger = l.logger.With(slog.String(string(pkgcontext.ContextKeyRequestID), requestID))
+		requestID := request.ExtractRequestID(ctx)
+		if requestID != "" {
+			logger = l.logger.With(slog.String(string(dogucontext.ContextKeyRequestID), requestID))
 		}
 	}
 
@@ -79,27 +80,27 @@ func getMessage(format string, v ...any) string {
 }
 
 func Infof(ctx context.Context, format string, v ...any) {
-	logger := pkgcontext.FromContext(ctx)
+	logger := ExtractLogger(ctx)
 	logger.Infof(ctx, format, v...)
 }
 
 func Debugf(ctx context.Context, format string, v ...any) {
-	logger := pkgcontext.FromContext(ctx)
+	logger := ExtractLogger(ctx)
 	logger.Debugf(ctx, format, v...)
 }
 
 func Warnf(ctx context.Context, format string, v ...any) {
-	logger := pkgcontext.FromContext(ctx)
+	logger := ExtractLogger(ctx)
 	logger.Warnf(ctx, format, v...)
 }
 
 func Errorf(ctx context.Context, format string, v ...any) {
-	logger := pkgcontext.FromContext(ctx)
+	logger := ExtractLogger(ctx)
 	logger.Errorf(ctx, format, v...)
 }
 
 func Fatalf(ctx context.Context, format string, v ...any) {
-	logger := pkgcontext.FromContext(ctx)
+	logger := ExtractLogger(ctx)
 	logger.Fatalf(ctx, format, v...)
 }
 

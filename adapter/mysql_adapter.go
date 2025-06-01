@@ -6,14 +6,12 @@ import (
 	"fmt"
 
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
 
 	"github.com/bluegreenhq/dogubako/config"
-	dogucontext "github.com/bluegreenhq/dogubako/context"
-	"github.com/bluegreenhq/dogubako/model"
 	dogusql "github.com/bluegreenhq/dogubako/sql"
+	"github.com/bluegreenhq/dogubako/transaction"
 )
 
 type MySQLAdapter struct {
@@ -120,7 +118,7 @@ func (a MySQLAdapter) Truncate(ctx context.Context, tableName string) error {
 	return nil
 }
 
-func (a MySQLAdapter) BeginTransaction() (model.Transaction, error) {
+func (a MySQLAdapter) BeginTransaction() (transaction.Transaction, error) {
 	tx, err := a.db.Beginx()
 	if err != nil {
 		return nil, errors.WithStack(err)
@@ -139,39 +137,15 @@ func (a MySQLAdapter) Close() error {
 }
 
 func (a MySQLAdapter) getExecutor(ctx context.Context) executor {
-	tx := dogucontext.ExtractTransaction(ctx)
+	tx := transaction.ExtractTransaction(ctx)
 	if tx == nil {
 		return a.db
 	}
 
-	sqlxTx, ok := tx.(*transaction)
+	sqlxTx, ok := tx.(*transactionImpl)
 	if !ok {
 		return a.db
 	}
 
 	return sqlxTx
-}
-
-type executor interface {
-	sqlx.ExtContext
-	GetContext(ctx context.Context, dest any, query string, args ...any) error
-	SelectContext(ctx context.Context, dest any, query string, args ...any) error
-}
-
-type transaction struct {
-	*sqlx.Tx
-	id string
-}
-
-var _ model.Transaction = (*transaction)(nil)
-
-func (t *transaction) ID() string {
-	return t.id
-}
-
-func newTransaction(tx *sqlx.Tx) *transaction {
-	return &transaction{
-		Tx: tx,
-		id: uuid.NewString(),
-	}
 }
