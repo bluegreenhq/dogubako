@@ -6,20 +6,25 @@ import (
 )
 
 type SMTPMailAdapter struct {
-	host     string
-	port     int
-	user     string
-	password string
+	client *mail.Client
 }
 
 var _ MailAdapter = (*SMTPMailAdapter)(nil)
 
 func NewSMTPMailAdapter(host string, port int, user, password string) (MailAdapter, error) {
+	client, err := mail.NewClient(
+		host,
+		mail.WithSMTPAuth(mail.SMTPAuthPlain),
+		mail.WithUsername(user),
+		mail.WithPassword(password),
+		mail.WithPort(port),
+	)
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+
 	return &SMTPMailAdapter{
-		host:     host,
-		port:     port,
-		user:     user,
-		password: password,
+		client: client,
 	}, nil
 }
 
@@ -39,18 +44,7 @@ func (a SMTPMailAdapter) SendMail(from, to string, subject, body string) error {
 	m.Subject(subject)
 	m.SetBodyString(mail.TypeTextPlain, body)
 
-	d, err := mail.NewClient(
-		a.host,
-		mail.WithSMTPAuth(mail.SMTPAuthPlain),
-		mail.WithUsername(a.user),
-		mail.WithPassword(a.password),
-		mail.WithPort(a.port),
-	)
-	if err != nil {
-		return errors.WithStack(err)
-	}
-
-	if err := d.DialAndSend(m); err != nil {
+	if err := a.client.DialAndSend(m); err != nil {
 		return errors.WithStack(err)
 	}
 
