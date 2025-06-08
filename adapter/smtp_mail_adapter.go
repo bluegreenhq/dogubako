@@ -1,10 +1,8 @@
 package adapter
 
 import (
-	"context"
-
 	"github.com/pkg/errors"
-	"gopkg.in/gomail.v2"
+	"github.com/wneessen/go-mail"
 )
 
 type SMTPMailAdapter struct {
@@ -25,14 +23,33 @@ func NewSMTPMailAdapter(host string, port int, user, password string) (MailAdapt
 	}, nil
 }
 
-func (a SMTPMailAdapter) SendMail(ctx context.Context, from, to string, subject, body string) error {
-	m := gomail.NewMessage()
-	m.SetHeader("From", from)
-	m.SetHeader("To", to)
-	m.SetHeader("Subject", subject)
-	m.SetBody("text/plain", body)
+func (a SMTPMailAdapter) SendMail(from, to string, subject, body string) error {
+	m := mail.NewMsg()
 
-	d := gomail.NewDialer(a.host, a.port, a.user, a.password)
+	err := m.From(from)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	err = m.To(to)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	m.Subject(subject)
+	m.SetBodyString(mail.TypeTextPlain, body)
+
+	d, err := mail.NewClient(
+		a.host,
+		mail.WithSMTPAuth(mail.SMTPAuthPlain),
+		mail.WithUsername(a.user),
+		mail.WithPassword(a.password),
+		mail.WithPort(a.port),
+	)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
 	if err := d.DialAndSend(m); err != nil {
 		return errors.WithStack(err)
 	}
