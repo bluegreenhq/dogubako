@@ -104,64 +104,41 @@ func Fatalf(ctx context.Context, format string, v ...any) {
 	logger.Fatalf(ctx, format, v...)
 }
 
-func (l *loggerImpl) Infof(ctx context.Context, format string, v ...any) {
-	if l.level > slog.LevelInfo {
+func (l *loggerImpl) logRecordf(ctx context.Context, level slog.Level, format string, v ...any) {
+	if l.level > level {
 		return
 	}
 
 	var pcs [1]uintptr
 
-	runtime.Callers(2, pcs[:])
-	r := slog.NewRecord(time.Now(), slog.LevelInfo, getMessage(format, v...), pcs[0])
+	var pc uintptr
+
+	// Note: skip=3 because of the additional function call
+	if runtime.Callers(3, pcs[:]) > 0 {
+		pc = pcs[0]
+	}
+
+	r := slog.NewRecord(time.Now(), level, getMessage(format, v...), pc)
 	_ = l.loggerWithContext(ctx).Handler().Handle(context.Background(), r)
+}
+
+func (l *loggerImpl) Infof(ctx context.Context, format string, v ...any) {
+	l.logRecordf(ctx, slog.LevelInfo, format, v...)
 }
 
 func (l *loggerImpl) Debugf(ctx context.Context, format string, v ...any) {
-	if l.level > slog.LevelDebug {
-		return
-	}
-
-	var pcs [1]uintptr
-
-	runtime.Callers(2, pcs[:])
-	r := slog.NewRecord(time.Now(), slog.LevelDebug, getMessage(format, v...), pcs[0])
-	_ = l.loggerWithContext(ctx).Handler().Handle(context.Background(), r)
+	l.logRecordf(ctx, slog.LevelDebug, format, v...)
 }
 
 func (l *loggerImpl) Warnf(ctx context.Context, format string, v ...any) {
-	if l.level > slog.LevelWarn {
-		return
-	}
-
-	var pcs [1]uintptr
-
-	runtime.Callers(2, pcs[:])
-	r := slog.NewRecord(time.Now(), slog.LevelWarn, getMessage(format, v...), pcs[0])
-	_ = l.loggerWithContext(ctx).Handler().Handle(context.Background(), r)
+	l.logRecordf(ctx, slog.LevelWarn, format, v...)
 }
 
 func (l *loggerImpl) Errorf(ctx context.Context, format string, v ...any) {
-	if l.level > slog.LevelError {
-		return
-	}
-
-	var pcs [1]uintptr
-
-	runtime.Callers(2, pcs[:])
-	r := slog.NewRecord(time.Now(), slog.LevelError, getMessage(format, v...), pcs[0])
-	_ = l.loggerWithContext(ctx).Handler().Handle(context.Background(), r)
+	l.logRecordf(ctx, slog.LevelError, format, v...)
 }
 
 func (l *loggerImpl) Fatalf(ctx context.Context, format string, v ...any) {
-	if l.level > slog.LevelError {
-		return
-	}
-
-	var pcs [1]uintptr
-
-	runtime.Callers(2, pcs[:])
-	r := slog.NewRecord(time.Now(), slog.LevelError, getMessage(format, v...), pcs[0])
-	_ = l.loggerWithContext(ctx).Handler().Handle(context.Background(), r)
-
+	l.logRecordf(ctx, slog.LevelError, format, v...)
 	os.Exit(1)
 }
