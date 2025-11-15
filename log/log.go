@@ -111,8 +111,13 @@ func (l *loggerImpl) Infof(ctx context.Context, format string, v ...any) {
 
 	var pcs [1]uintptr
 
-	runtime.Callers(2, pcs[:])
-	r := slog.NewRecord(time.Now(), slog.LevelInfo, getMessage(format, v...), pcs[0])
+	var pc uintptr
+
+	if runtime.Callers(2, pcs[:]) > 0 {
+		pc = pcs[0]
+	}
+
+	r := slog.NewRecord(time.Now(), slog.LevelInfo, getMessage(format, v...), pc)
 	_ = l.loggerWithContext(ctx).Handler().Handle(context.Background(), r)
 }
 
@@ -123,8 +128,13 @@ func (l *loggerImpl) Debugf(ctx context.Context, format string, v ...any) {
 
 	var pcs [1]uintptr
 
-	runtime.Callers(2, pcs[:])
-	r := slog.NewRecord(time.Now(), slog.LevelDebug, getMessage(format, v...), pcs[0])
+	var pc uintptr
+
+	if runtime.Callers(2, pcs[:]) > 0 {
+		pc = pcs[0]
+	}
+
+	r := slog.NewRecord(time.Now(), slog.LevelDebug, getMessage(format, v...), pc)
 	_ = l.loggerWithContext(ctx).Handler().Handle(context.Background(), r)
 }
 
@@ -135,8 +145,13 @@ func (l *loggerImpl) Warnf(ctx context.Context, format string, v ...any) {
 
 	var pcs [1]uintptr
 
-	runtime.Callers(2, pcs[:])
-	r := slog.NewRecord(time.Now(), slog.LevelWarn, getMessage(format, v...), pcs[0])
+	var pc uintptr
+
+	if runtime.Callers(2, pcs[:]) > 0 {
+		pc = pcs[0]
+	}
+
+	r := slog.NewRecord(time.Now(), slog.LevelWarn, getMessage(format, v...), pc)
 	_ = l.loggerWithContext(ctx).Handler().Handle(context.Background(), r)
 }
 
@@ -147,8 +162,13 @@ func (l *loggerImpl) Errorf(ctx context.Context, format string, v ...any) {
 
 	var pcs [1]uintptr
 
-	runtime.Callers(2, pcs[:])
-	r := slog.NewRecord(time.Now(), slog.LevelError, getMessage(format, v...), pcs[0])
+	var pc uintptr
+
+	if runtime.Callers(2, pcs[:]) > 0 {
+		pc = pcs[0]
+	}
+
+	r := slog.NewRecord(time.Now(), slog.LevelError, getMessage(format, v...), pc)
 	_ = l.loggerWithContext(ctx).Handler().Handle(context.Background(), r)
 }
 
@@ -159,8 +179,13 @@ func (l *loggerImpl) Fatalf(ctx context.Context, format string, v ...any) {
 
 	var pcs [1]uintptr
 
-	runtime.Callers(2, pcs[:])
-	r := slog.NewRecord(time.Now(), slog.LevelError, getMessage(format, v...), pcs[0])
+	var pc uintptr
+
+	if runtime.Callers(2, pcs[:]) > 0 {
+		pc = pcs[0]
+	}
+
+	r := slog.NewRecord(time.Now(), slog.LevelError, getMessage(format, v...), pc)
 	_ = l.loggerWithContext(ctx).Handler().Handle(context.Background(), r)
 
 	os.Exit(1)
