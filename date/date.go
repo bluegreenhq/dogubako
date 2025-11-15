@@ -16,6 +16,7 @@ func NewDateWithTime(tm time.Time) Date {
 
 func Today() Date {
 	now := time.Now().UTC()
+
 	return NewDate(now.Year(), now.Month(), now.Day())
 }
 
