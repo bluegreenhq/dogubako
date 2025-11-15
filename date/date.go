@@ -16,9 +16,7 @@ func NewDateWithTime(tm time.Time) Date {
 
 func Today() Date {
 	now := time.Now().UTC()
-	today := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.UTC)
-
-	return Date(today)
+	return NewDate(now.Year(), now.Month(), now.Day())
 }
 
 func (d Date) Equal(other Date) bool {
@@ -48,9 +46,9 @@ func (d Date) Time() time.Time {
 	return time.Time(d)
 }
 
-func (d Date) InWeek(beginOfWeek Date) bool {
+func (d Date) InWeek(other Date) bool {
 	// ISOWeekは月曜日はじまり
-	y1, w1 := beginOfWeek.Time().ISOWeek()
+	y1, w1 := other.Time().ISOWeek()
 	y2, w2 := d.Time().ISOWeek()
 
 	return y1 == y2 && w1 == w2
