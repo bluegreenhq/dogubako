@@ -60,3 +60,6 @@ func (m *PopupMenu) Width() int {
 
 // Hover はホバー中の項目インデックスを返す。-1 はホバーなし。
 func (m *PopupMenu) Hover() int { return m.hover }
+
+// SetHover はホバー中の項目インデックスを設定する。
+func (m *PopupMenu) SetHover(h int) { m.hover = h }
