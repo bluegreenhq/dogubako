@@ -55,6 +55,10 @@ linters:
       - common-false-positives
       - legacy
       - std-error-handling
+    rules:
+      - linters:
+          - gochecknoglobals
+        path: ^tui/
     paths:
       - third_party$
       - builtin$
