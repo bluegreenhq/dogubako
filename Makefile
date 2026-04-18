@@ -23,6 +23,11 @@ endif
 	git tag tui/$(VERSION)
 	git push origin $(VERSION) tui/$(VERSION)
 
+.PHONY: lint-fix
+lint-fix:
+	golangci-lint run --fix
+	cd tui && golangci-lint run --fix
+
 .PHONY: format
 format:
 	golangci-lint fmt
