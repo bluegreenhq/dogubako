@@ -48,6 +48,7 @@ linters:
     exhaustruct:
       exclude:
         - log/.*
+        - 'charm\.land/.*'
   exclusions:
     generated: lax
     presets:
@@ -59,6 +60,9 @@ linters:
       - linters:
           - gochecknoglobals
         path: ^tui/
+      - linters:
+          - exhaustruct
+        path: _test\.go$
     paths:
       - third_party$
       - builtin$
