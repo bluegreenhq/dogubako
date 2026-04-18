@@ -1,7 +1,6 @@
 package tui
 
 import (
-	"fmt"
 	"strings"
 
 	"charm.land/lipgloss/v2"
@@ -38,7 +37,8 @@ func (m *PopupMenu) View() []string {
 			lines = append(lines, emptyLine)
 		}
 
-		label := fmt.Sprintf(" %-*s", innerWidth-1, item.Label)
+		padRight := innerWidth - 1 - lipgloss.Width(item.Label)
+		label := " " + item.Label + strings.Repeat(" ", padRight)
 
 		var styled string
 

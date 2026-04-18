@@ -14,9 +14,7 @@ var (
 
 // ViewTop は上罫線行（┌────┐）を返す。
 func (b *BoxButton) ViewTop() string {
-	inner := b.innerLabel()
-
-	return boxBorderStyle.Render("┌" + strings.Repeat("─", len(inner)) + "┐")
+	return boxBorderStyle.Render("┌" + strings.Repeat("─", lipgloss.Width(b.innerLabel())) + "┐")
 }
 
 // ViewMiddle はラベル行（│ label │）を返す。
@@ -35,7 +33,5 @@ func (b *BoxButton) ViewMiddle() string {
 
 // ViewBottom は下罫線行（└────┘）を返す。
 func (b *BoxButton) ViewBottom() string {
-	inner := b.innerLabel()
-
-	return boxBorderStyle.Render("└" + strings.Repeat("─", len(inner)) + "┘")
+	return boxBorderStyle.Render("└" + strings.Repeat("─", lipgloss.Width(b.innerLabel())) + "┘")
 }

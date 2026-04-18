@@ -3,6 +3,7 @@ package tui_test
 import (
 	"testing"
 
+	"charm.land/lipgloss/v2"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/bluegreenhq/dogubako/tui"
@@ -225,6 +226,36 @@ func TestPopupMenuSelectHover(t *testing.T) {
 	assert.Equal(t, -1, m.SelectHover())
 	m.MoveHoverDown()
 	assert.Equal(t, 0, m.SelectHover())
+}
+
+func TestPopupMenuWidth_Multibyte(t *testing.T) {
+	t.Parallel()
+
+	items := []tui.MenuItem{
+		{Label: "編集", Disabled: false},
+		{Label: "削除", Disabled: false},
+	}
+	m := tui.NewPopupMenu(items)
+	// "編集" = 全角2文字 = 表示幅4 + padding 4 = 8
+	// ※ len("編集") = 6 (バイト長) だとバイト長ベースで 10 になってしまう
+	assert.Equal(t, 8, m.Width())
+}
+
+func TestPopupMenuView_MultibyteAlignment(t *testing.T) {
+	t.Parallel()
+
+	items := []tui.MenuItem{
+		{Label: "編集", Disabled: false},
+		{Label: "削除", Disabled: false},
+	}
+	m := tui.NewPopupMenu(items)
+	lines := m.View()
+
+	// 全行の表示幅が Width() と一致すべき
+	width := m.Width()
+	for i, line := range lines {
+		assert.Equal(t, width, lipgloss.Width(line), "line %d width mismatch", i)
+	}
 }
 
 func TestPopupMenuViewDisabled(t *testing.T) {

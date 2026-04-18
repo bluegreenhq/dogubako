@@ -1,5 +1,7 @@
 package tui
 
+import "charm.land/lipgloss/v2"
+
 // boxButtonPadding は罫線ボタンの追加幅（│ + space + space + │）。
 const boxButtonPadding = 4
 
@@ -25,7 +27,7 @@ func (b *BoxButton) SetHovered(h bool) { b.hovered = h }
 
 // DisplayWidth はボタンの表示幅（│ + space + label + space + │）を返す。
 func (b *BoxButton) DisplayWidth() int {
-	return len(b.label) + boxButtonPadding
+	return lipgloss.Width(b.label) + boxButtonPadding
 }
 
 // innerLabel は罫線内の文字列（スペース含む）を返す。

@@ -1,5 +1,7 @@
 package tui
 
+import "charm.land/lipgloss/v2"
+
 // MenuItem はポップアップメニューの1項目を表す。
 type MenuItem struct {
 	Label    string
@@ -50,8 +52,8 @@ func (m *PopupMenu) Height() int {
 func (m *PopupMenu) Width() int {
 	maxLen := 0
 	for _, item := range m.items {
-		if len(item.Label) > maxLen {
-			maxLen = len(item.Label)
+		if w := lipgloss.Width(item.Label); w > maxLen {
+			maxLen = w
 		}
 	}
 
