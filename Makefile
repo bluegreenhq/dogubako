@@ -17,11 +17,11 @@ test:
 .PHONY: release
 release:
 ifndef VERSION
-	$(error VERSION is required. Usage: make release VERSION=v0.1.0)
+	$(error VERSION is required. Usage: make release VERSION=0.1.0)
 endif
-	git tag $(VERSION)
-	git tag tui/$(VERSION)
-	git push origin $(VERSION) tui/$(VERSION)
+	git tag v$(VERSION)
+	git tag tui/v$(VERSION)
+	git push origin v$(VERSION) tui/v$(VERSION)
 
 .PHONY: lint-fix
 lint-fix:
