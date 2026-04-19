@@ -237,6 +237,6 @@ type stubMenu struct {
 	lines []string
 }
 
-func (s *stubMenu) Width() int      { return s.w }
-func (s *stubMenu) Height() int     { return s.h }
-func (s *stubMenu) View() []string  { return s.lines }
+func (s *stubMenu) Width() int     { return s.w }
+func (s *stubMenu) Height() int    { return s.h }
+func (s *stubMenu) View() []string { return s.lines }
