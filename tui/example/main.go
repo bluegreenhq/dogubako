@@ -122,7 +122,6 @@ func (m model) handleKey(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 		return m, m.cursorBlink.Reset()
 
 	case demoBoxButton:
-		// キー操作なし
 
 	case demoPopupMenu:
 		m.popup.HandleKeyNav(msg)
@@ -135,11 +134,9 @@ func (m model) handleKey(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 		case tui.ConfirmNo:
 			m.confirmResult = "No"
 		case tui.ConfirmContinue:
-			// 継続中
 		}
 
 	case demoCount:
-		// 到達しない
 	}
 
 	return m, nil
@@ -179,7 +176,6 @@ func (m model) View() tea.View {
 	case demoConfirmDialog:
 		b.WriteString(m.viewConfirmDialog())
 	case demoCount:
-		// 到達しない
 	}
 
 	b.WriteString("\n\n")
