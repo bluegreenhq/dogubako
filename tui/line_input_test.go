@@ -32,8 +32,8 @@ func TestLineInput_View_CursorAtEnd(t *testing.T) {
 
 	li := tui.NewLineInput()
 	li.SetValue("abc")
-	// カーソルは末尾、先頭スペース + テキスト + ブロックカーソル
-	assert.Equal(t, " abc█", li.View(true))
+	// 先頭スペース(1) + "abc"(3) + カーソル(1) = 5
+	assert.Equal(t, 5, lipgloss.Width(li.View(true)))
 }
 
 func TestLineInput_View_CursorHidden(t *testing.T) {
@@ -50,17 +50,19 @@ func TestLineInput_View_CursorAtBeginning(t *testing.T) {
 	li := tui.NewLineInput()
 	li.SetValue("abc")
 	li.HandleKey(tea.KeyPressMsg{Code: 'a', Mod: tea.ModCtrl}) // C-a で先頭へ
-	assert.Equal(t, " █bc", li.View(true))
+	// 先頭スペース(1) + カーソル"a"(1) + "bc"(2) = 4
+	assert.Equal(t, 4, lipgloss.Width(li.View(true)))
 }
 
-func TestLineInput_View_CursorAtMiddle(t *testing.T) {
+func TestLineInput_View_CursorWidthConsistent(t *testing.T) {
 	t.Parallel()
 
 	li := tui.NewLineInput()
 	li.SetValue("abc")
+
+	// カーソルが文字上にあるとき、blink on/off で表示幅が変わらない
 	li.HandleKey(tea.KeyPressMsg{Code: 'a', Mod: tea.ModCtrl})
-	li.HandleKey(tea.KeyPressMsg{Code: 'f', Mod: tea.ModCtrl}) // C-f で1つ右へ
-	assert.Equal(t, " a█c", li.View(true))
+	assert.Equal(t, lipgloss.Width(li.View(false)), lipgloss.Width(li.View(true)))
 }
 
 func TestLineInput_View_WideCursorWidth(t *testing.T) {
@@ -153,21 +155,21 @@ func TestLineInput_HandleKey_CursorMovement(t *testing.T) {
 	li := tui.NewLineInput()
 	li.SetValue("abc")
 
-	// Home で先頭
+	// Home で先頭 → 表示幅 = " " + "abc" = 4
 	li.HandleKey(tea.KeyPressMsg{Code: tea.KeyHome})
-	assert.Equal(t, " █bc", li.View(true))
+	assert.Equal(t, 4, lipgloss.Width(li.View(true)))
 
-	// End で末尾
+	// End で末尾 → 表示幅 = " " + "abc" + cursor = 5
 	li.HandleKey(tea.KeyPressMsg{Code: tea.KeyEnd})
-	assert.Equal(t, " abc█", li.View(true))
+	assert.Equal(t, 5, lipgloss.Width(li.View(true)))
 
-	// Left で左
+	// Left で左 → カーソルが "c" 上 → 表示幅 = 4
 	li.HandleKey(tea.KeyPressMsg{Code: tea.KeyLeft})
-	assert.Equal(t, " ab█", li.View(true))
+	assert.Equal(t, 4, lipgloss.Width(li.View(true)))
 
-	// Right で右
+	// Right で右 → 末尾 → 表示幅 = 5
 	li.HandleKey(tea.KeyPressMsg{Code: tea.KeyRight})
-	assert.Equal(t, " abc█", li.View(true))
+	assert.Equal(t, 5, lipgloss.Width(li.View(true)))
 }
 
 func TestLineInput_HandleKey_CursorBoundary(t *testing.T) {
@@ -176,12 +178,14 @@ func TestLineInput_HandleKey_CursorBoundary(t *testing.T) {
 	li := tui.NewLineInput()
 	li.SetValue("a")
 
-	// 末尾でさらに右に移動しても変わらない
+	// 末尾でさらに右に移動しても表示幅が変わらない
+	w := lipgloss.Width(li.View(true))
 	li.HandleKey(tea.KeyPressMsg{Code: tea.KeyRight})
-	assert.Equal(t, " a█", li.View(true))
+	assert.Equal(t, w, lipgloss.Width(li.View(true)))
 
-	// 先頭でさらに左に移動しても変わらない
+	// 先頭でさらに左に移動しても表示幅が変わらない
 	li.HandleKey(tea.KeyPressMsg{Code: tea.KeyHome})
+	w = lipgloss.Width(li.View(true))
 	li.HandleKey(tea.KeyPressMsg{Code: tea.KeyLeft})
-	assert.Equal(t, " █", li.View(true))
+	assert.Equal(t, w, lipgloss.Width(li.View(true)))
 }

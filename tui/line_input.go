@@ -1,11 +1,13 @@
 package tui
 
 import (
-	"strings"
-
 	tea "charm.land/bubbletea/v2"
-	"github.com/mattn/go-runewidth"
+	"charm.land/lipgloss/v2"
 )
+
+var cursorStyle = lipgloss.NewStyle().
+	Foreground(lipgloss.Color("0")).
+	Background(lipgloss.Color("7"))
 
 // LineInputResult は LineInput のキー処理結果を表す。
 type LineInputResult int
@@ -54,11 +56,10 @@ func (li *LineInput) View(cursorVisible bool) string {
 
 	before := string(li.value[:li.cursor])
 	if li.cursor >= len(li.value) {
-		return " " + before + "█"
+		return " " + before + cursorStyle.Render(" ")
 	}
 
-	w := runewidth.RuneWidth(li.value[li.cursor])
-	cursor := strings.Repeat("█", w)
+	cursor := cursorStyle.Render(string(li.value[li.cursor]))
 	after := string(li.value[li.cursor+1:])
 
 	return " " + before + cursor + after
@@ -134,11 +135,10 @@ func (li *LineInput) viewContent(runes []rune, cursorPos int, cursorVisible bool
 
 	before := string(runes[:cursorPos])
 	if cursorPos >= len(runes) {
-		return before + "█"
+		return before + cursorStyle.Render(" ")
 	}
 
-	w := runewidth.RuneWidth(runes[cursorPos])
-	cursor := strings.Repeat("█", w)
+	cursor := cursorStyle.Render(string(runes[cursorPos]))
 	after := string(runes[cursorPos+1:])
 
 	return before + cursor + after
