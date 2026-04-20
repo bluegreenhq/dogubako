@@ -1,6 +1,11 @@
 package tui
 
-import tea "charm.land/bubbletea/v2"
+import (
+	"strings"
+
+	tea "charm.land/bubbletea/v2"
+	"github.com/mattn/go-runewidth"
+)
 
 // LineInputResult は LineInput のキー処理結果を表す。
 type LineInputResult int
@@ -52,9 +57,11 @@ func (li *LineInput) View(cursorVisible bool) string {
 		return " " + before + "█"
 	}
 
+	w := runewidth.RuneWidth(li.value[li.cursor])
+	cursor := strings.Repeat("█", w)
 	after := string(li.value[li.cursor+1:])
 
-	return " " + before + "█" + after
+	return " " + before + cursor + after
 }
 
 // ViewWithWidth は最大表示幅を考慮した表示文字列を返す。
@@ -130,9 +137,11 @@ func (li *LineInput) viewContent(runes []rune, cursorPos int, cursorVisible bool
 		return before + "█"
 	}
 
+	w := runewidth.RuneWidth(runes[cursorPos])
+	cursor := strings.Repeat("█", w)
 	after := string(runes[cursorPos+1:])
 
-	return before + "█" + after
+	return before + cursor + after
 }
 
 func (li *LineInput) insertText(s string) {
