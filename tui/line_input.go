@@ -5,9 +5,10 @@ import (
 	"charm.land/lipgloss/v2"
 )
 
-var cursorStyle = lipgloss.NewStyle().
-	Foreground(lipgloss.Color("0")).
-	Background(lipgloss.Color("7"))
+var (
+	cursorStyle  = lipgloss.NewStyle().Reverse(true)
+	cursorHidden = lipgloss.NewStyle() // blink OFF 時に同じ ANSI 構造を維持する
+)
 
 // LineInputResult は LineInput のキー処理結果を表す。
 type LineInputResult int
@@ -24,11 +25,18 @@ type LineInput struct {
 	value   []rune
 	cursor  int
 	killBuf []rune
+	blink   bool
 }
 
-// NewLineInput は新しい LineInput を生成する。
+// NewLineInput は新しい LineInput を生成する（blink有効）。
 func NewLineInput() LineInput {
-	return LineInput{value: nil, cursor: 0, killBuf: nil}
+	return LineInput{value: nil, cursor: 0, killBuf: nil, blink: true}
+}
+
+// NewLineInputNoBlink は blink 無効の LineInput を生成する。
+// cursorVisible の値に関わらず常にカーソルを表示する。
+func NewLineInputNoBlink() LineInput {
+	return LineInput{value: nil, cursor: 0, killBuf: nil, blink: false}
 }
 
 // Value は入力中のテキストを返す。
@@ -50,19 +58,7 @@ func (li *LineInput) Reset() {
 // カーソル位置の文字をブロックカーソル（█）で置換して表示する。
 // cursorVisible が false の場合はカーソルを非表示にする。
 func (li *LineInput) View(cursorVisible bool) string {
-	if !cursorVisible {
-		return " " + string(li.value)
-	}
-
-	before := string(li.value[:li.cursor])
-	if li.cursor >= len(li.value) {
-		return " " + before + cursorStyle.Render(" ")
-	}
-
-	cursor := cursorStyle.Render(string(li.value[li.cursor]))
-	after := string(li.value[li.cursor+1:])
-
-	return " " + before + cursor + after
+	return " " + li.viewContent(li.value, li.cursor, li.effectiveCursorVisible(cursorVisible))
 }
 
 // ViewWithWidth は最大表示幅を考慮した表示文字列を返す。
@@ -71,8 +67,10 @@ func (li *LineInput) ViewWithWidth(maxWidth int, cursorVisible bool) string {
 	runes := li.value
 	cursor := li.cursor
 
+	cv := li.effectiveCursorVisible(cursorVisible)
+
 	if maxWidth <= 0 || len(runes) <= maxWidth {
-		return li.viewContent(runes, cursor, cursorVisible)
+		return li.viewContent(runes, cursor, cv)
 	}
 
 	// カーソルが見えるようにウィンドウをスライド
@@ -83,7 +81,7 @@ func (li *LineInput) ViewWithWidth(maxWidth int, cursorVisible bool) string {
 
 	end := min(start+maxWidth, len(runes))
 
-	return li.viewContent(runes[start:end], cursor-start, cursorVisible)
+	return li.viewContent(runes[start:end], cursor-start, cv)
 }
 
 // HandleKey はキー入力を処理し、結果を返す。
@@ -129,16 +127,21 @@ func (li *LineInput) HandleKey(msg tea.KeyPressMsg) LineInputResult { //nolint:c
 }
 
 func (li *LineInput) viewContent(runes []rune, cursorPos int, cursorVisible bool) string {
-	if !cursorVisible {
-		return string(runes)
+	style := cursorHidden
+	if cursorVisible {
+		style = cursorStyle
 	}
 
 	before := string(runes[:cursorPos])
 	if cursorPos >= len(runes) {
-		return before + cursorStyle.Render(" ")
+		if cursorVisible {
+			return before + style.Render(" ")
+		}
+
+		return before
 	}
 
-	cursor := cursorStyle.Render(string(runes[cursorPos]))
+	cursor := style.Render(string(runes[cursorPos]))
 	after := string(runes[cursorPos+1:])
 
 	return before + cursor + after
@@ -180,6 +183,14 @@ func (li *LineInput) yank() {
 	if len(li.killBuf) > 0 {
 		li.insertText(string(li.killBuf))
 	}
+}
+
+func (li *LineInput) effectiveCursorVisible(cursorVisible bool) bool {
+	if !li.blink {
+		return true
+	}
+
+	return cursorVisible
 }
 
 func (li *LineInput) cursorLeft() {

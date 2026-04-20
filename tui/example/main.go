@@ -34,8 +34,9 @@ type model struct {
 	width   int
 	height  int
 
-	// LineInput
-	input       tui.LineInput
+	// LineInput (blink有効/無効)
+	inputs      [2]tui.LineInput
+	inputFocus  int
 	cursorBlink tui.CursorBlink
 
 	// BoxButton
@@ -53,10 +54,14 @@ const cursorOwner = 1
 
 func newModel() model {
 	return model{
-		current:       demoLineInput,
-		width:         0,
-		height:        0,
-		input:         tui.NewLineInput(),
+		current: demoLineInput,
+		width:   0,
+		height:  0,
+		inputs: [2]tui.LineInput{
+			tui.NewLineInput(),
+			tui.NewLineInputNoBlink(),
+		},
+		inputFocus:    0,
 		cursorBlink:   tui.NewCursorBlink(cursorOwner),
 		confirmResult: "",
 		buttons: [3]tui.BoxButton{
@@ -117,7 +122,20 @@ func (m model) handleKey(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 
 	switch m.current {
 	case demoLineInput:
-		m.input.HandleKey(msg)
+		switch {
+		case msg.Code == tea.KeyDown,
+			msg.Code == 'n' && msg.Mod&tea.ModCtrl != 0:
+			if m.inputFocus < len(m.inputs)-1 {
+				m.inputFocus++
+			}
+		case msg.Code == tea.KeyUp,
+			msg.Code == 'p' && msg.Mod&tea.ModCtrl != 0:
+			if m.inputFocus > 0 {
+				m.inputFocus--
+			}
+		default:
+			m.inputs[m.inputFocus].HandleKey(msg)
+		}
 
 		return m, m.cursorBlink.Reset()
 
@@ -188,16 +206,32 @@ func (m model) View() tea.View {
 	return v
 }
 
+var inputLabels = [2]string{"blink:    ", "no blink: "}
+
 func (m model) viewLineInput() string {
 	var b strings.Builder
 
-	b.WriteString(titleStyle.Render("LineInput"))
+	b.WriteString(titleStyle.Render("LineInput (複数フィールド)"))
 	b.WriteString("\n\n")
-	b.WriteString("  入力: " + m.input.ViewWithWidth(0, m.cursorBlink.Visible()))
+
+	for i := range m.inputs {
+		label := inputLabels[i]
+		if i == m.inputFocus {
+			b.WriteString("  " + label + m.inputs[i].ViewWithWidth(0, m.cursorBlink.Visible()))
+		} else {
+			v := m.inputs[i].Value()
+			if v == "" {
+				v = " "
+			}
+
+			b.WriteString("  " + label + v)
+		}
+
+		b.WriteString("\n")
+	}
+
 	b.WriteString("\n")
-	fmt.Fprintf(&b, "  値:   %q", m.input.Value())
-	b.WriteString("\n\n")
-	b.WriteString(helpStyle.Render("  C-a: 先頭  C-e: 末尾  C-f/C-b: 左右  C-k: kill  C-y: yank"))
+	b.WriteString(helpStyle.Render("  ↑/↓: フィールド移動  C-a: 先頭  C-e: 末尾  C-f/C-b: 左右"))
 
 	return b.String()
 }
